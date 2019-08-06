@@ -5,6 +5,7 @@
 
 void webserver(const std::string& ip, int port, int backlog);
 
-void error_handling(const std::string& msg);
+void* request_handler(void* arg);
+void error_handler(const std::string& msg);
 
 #endif
