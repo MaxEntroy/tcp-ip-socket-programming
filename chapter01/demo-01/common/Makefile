@@ -11,15 +11,15 @@ AR= ar rcu
 RANLIB= ranlib
 RM= rm -rf
 
-MAIN_A= liberr.a
+ERR_A= liberr.a
 BASE_O= err.o
 
 
 # Targets start here
-a: $(MAIN_A)
+a: $(ERR_A)
 
 
-$(MAIN_A): $(BASE_O)
+$(ERR_A): $(BASE_O)
 	$(AR) $@ $(BASE_O)
 	$(RANLIB) $@
 
@@ -33,13 +33,13 @@ echo:
 	@echo "RM= $(RM)"
 
 clean:
-	$(RM) $(MAIN_A) $(BASE_O)
+	$(RM) $(ERR_A) $(BASE_O)
 
 # Convenience targets
 T= t
 c89:
 	$(MAKE) $(T) CC="gcc -std=c89"
 
-.PHONY: a echo clean clean_o
+.PHONY: a echo clean
 
 err.o: err.c err.h

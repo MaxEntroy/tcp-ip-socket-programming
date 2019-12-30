@@ -11,14 +11,14 @@ MYCFLAGS= -I$(ROOT)
 MYLDFLAGS= -L$(ROOT)/common
 MYLIBS= -lerr
 
-MAIN_T= echo_server
-MAIN_O= echo_server.o
+ECHO_SERVER_T= echo_server
+ECHO_SERVER_O= echo_server.o
 
 # Targets start here
-t: $(MAIN_T)
+t: $(ECHO_SERVER_T)
 
-$(MAIN_T): $(MAIN_O)
-	$(CC) -o $@ $(LDFLAGS) $(MAIN_O) $(LIBS)
+$(ECHO_SERVER_T): $(ECHO_SERVER_O)
+	$(CC) -o $@ $(LDFLAGS) $(ECHO_SERVER_O) $(LIBS)
 
 echo:
 	@echo "CC= $(CC)"
@@ -28,7 +28,7 @@ echo:
 	@echo "RM= $(RM)"
 
 clean:
-	$(RM) $(MAIN_T) $(MAIN_O)
+	$(RM) $(ECHO_SERVER_T) $(ECHO_SERVER_O)
 
 # Convenience targets
 T= t
