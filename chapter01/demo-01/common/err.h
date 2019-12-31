@@ -12,6 +12,20 @@
 /* Prints an error message, adding the program name in front of it
  * (if presents)
  * */
-void l_message(const char* pname, const char* msg);
+void s_message(const char* pname, const char* msg);
+
+/* Prints an error value, add the program name in front of it
+ * (if presents)
+ * */
+void v_message(const char* pname, int val);
+
+/* Error handling.
+ * */
+void err_handling(const char* pname, const char* msg);
+
+/* Error handling.
+ * Prints errno.
+ * */
+void perr_handling(const char* pname, const char* msg);
 
 #endif
