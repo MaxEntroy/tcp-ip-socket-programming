@@ -1,8 +1,10 @@
 #include "common/err.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <unistd.h>
 #include <arpa/inet.h>
 
 #define BACKLOG 5
@@ -41,11 +43,20 @@ int main(int argc, char* argv[]) {
   memset(&clnt_addr, 0, sizeof(clnt_addr));
   socklen_t clnt_addr_sz = sizeof(clnt_addr);
 
-  int clnt_sfd = accept(serv_sfd, (struct sockaddr*) &clnt_addr, &clnt_addr_sz);
-  if(clnt_sfd == -1) {
-    perr_handling("accept", "error");
+  printf("[%s:%s] listening...\n", argv[1], argv[2]);
+  while(1) {
+    int clnt_sfd = accept(serv_sfd, (struct sockaddr*) &clnt_addr, &clnt_addr_sz);
+    if(clnt_sfd == -1) {
+      perr_handling("accept", "error");
+    }
+
+    // send message to client
+    const char message[] = "hello,world";
+    write(clnt_sfd, &message, sizeof(message));
+
+    close(clnt_sfd);
   }
 
-  // send message to client
+  close(serv_sfd);
   return 0;
 }

@@ -36,7 +36,7 @@ clean:
 	$(RM) $(ERR_A) $(BASE_O)
 
 # Convenience targets
-T= t
+A= a
 c89:
 	$(MAKE) $(T) CC="gcc -std=c89"
 
