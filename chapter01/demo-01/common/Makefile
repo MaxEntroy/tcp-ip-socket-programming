@@ -38,7 +38,7 @@ clean:
 # Convenience targets
 A= a
 c89:
-	$(MAKE) $(T) CC="gcc -std=c89"
+	$(MAKE) $(A) CC="gcc -std=c89"
 
 .PHONY: a echo clean
 
