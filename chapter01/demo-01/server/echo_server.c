@@ -1,11 +1,11 @@
-#include "common/err.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+
+#include "common/err.h"
 
 #define BACKLOG 5
 
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
   }
 
   // accept
-  struct sockaddr clnt_addr;
+  struct sockaddr_in clnt_addr;
   memset(&clnt_addr, 0, sizeof(clnt_addr));
   socklen_t clnt_addr_sz = sizeof(clnt_addr);
 
