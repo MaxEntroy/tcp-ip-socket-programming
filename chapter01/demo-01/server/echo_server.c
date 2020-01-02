@@ -43,18 +43,21 @@ int main(int argc, char* argv[]) {
   memset(&clnt_addr, 0, sizeof(clnt_addr));
   socklen_t clnt_addr_sz = sizeof(clnt_addr);
 
-  printf("[%s:%s] listening...\n", argv[1], argv[2]);
   while(1) {
+    printf("[%s:%s] listening...\n", argv[1], argv[2]);
+
     int clnt_sfd = accept(serv_sfd, (struct sockaddr*) &clnt_addr, &clnt_addr_sz);
     if(clnt_sfd == -1) {
       perr_handling("accept", "error");
     }
+    printf("[%s:%u] connected!\n", inet_ntoa(clnt_addr.sin_addr), clnt_addr.sin_port);
 
     // send message to client
-    const char message[] = "hello,world";
+    const char message[] = "hello,world!";
     write(clnt_sfd, &message, sizeof(message));
 
     close(clnt_sfd);
+    printf("[%s:%u] disonnected!\n", inet_ntoa(clnt_addr.sin_addr), clnt_addr.sin_port);
   }
 
   close(serv_sfd);

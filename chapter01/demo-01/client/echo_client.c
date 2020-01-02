@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -6,6 +7,8 @@
 #include <unistd.h>
 
 #include "common/err.h"
+
+#define BUF_SZ 128
 
 int main(int argc, char* argv[]) {
   if(argc != 3) {
@@ -26,6 +29,16 @@ int main(int argc, char* argv[]) {
   serv_addr.sin_port = htons(atoi(argv[2]));
 
   // connect
+  int ret = connect(clnt_sfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr));
+  if(ret == -1) {
+    perr_handling("connect", "error");
+  }
 
+  // recv message from server
+  char buf[BUF_SZ];
+  read(clnt_sfd, buf, sizeof(buf));
+  printf("%s\n", buf);
+
+  close(clnt_sfd);
   return 0;
 }
