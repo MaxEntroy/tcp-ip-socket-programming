@@ -1,0 +1,1 @@
+killall echo_server
