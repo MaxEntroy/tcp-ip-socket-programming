@@ -4,8 +4,9 @@ echo-server实现，注意以下
 - echo-client没必要实现成while-loop
 - tcp没有数据边界
 
-本次实现的问题，看客户端io_event的实现
+本次实现的问题，看看io_event的实现
 ```c
+// client
 void do_io_event(int clnt_sfd) {
   const char* msg = "hello, echo server, i am echo client.";
   char buf[BUF_SZ];
@@ -14,6 +15,14 @@ void do_io_event(int clnt_sfd) {
   int nread = read(clnt_sfd, buf, sizeof(buf));
   buf[nread] = '\0';
   printf("%s\n", buf);
+}
+
+// server
+void do_io_event(int clnt_sfd) {
+  char buf[BUF_SZ];
+
+  int nread = read(clnt_sfd, buf, BUF_SZ);
+  write(clnt_sfd, buf, nread);
 }
 ```
 
@@ -51,6 +60,19 @@ q:non-blocking io和blocking io的区别?
 - 2.2.1.non-blocking模式下，应用层buf <= tcp send buffer，返回应用层buf字节数
 - 2.2.2.non-blocking模式下，应用层buf > tcp send buffer and tcp send buffer != 0，返回实际拷贝到tcp send buffer的字节数
 - 2.2.3.non-blocking模式下，应用层buf > tcp send buffer and tcp send buffer == 0，返回-1
+
+再回过头来说下echo_client和echo_server当中的do_io_event的问题
+
+q:echo_client当中的do_io_event存在哪些问题?
+>我们从上面的分析可以得知，read在blocking模式下，只要receive buffer有数据，立马就返回。
+考虑这样的情形，client发送100byte,但是发送端是30-30-40这么发送过去的，server端也是30-30-40这么发送回来的。
+显然，上面的代码不足以收集完成所有的数据。
+但是，有一个点，client是清楚的，client发送了多少字节的数据，自己清楚，因此在接受的时候可以保证收集完整之后，再退出。
+
+q:echo_server当中的do_io_event存在哪些问题?
+>不做细节讨论，从宏观上来说，目前这个版本的echo-server实现，server端无法得知client端到底有多少数据要发送，按照目前的实现，
+假如read了部分数据，read返回，然后write返回，整个io_event就结束了，根本没有办法保证，接收到client端所有数据才结束。
+但是目前又没有应用层协议来保证，比如说，发个标志。只能依赖对方断开socket来获知对方的数据发送完成。非常不优雅。
 
 参考<br>
 [浅谈TCP/IP网络编程中socket的行为](https://www.cnblogs.com/promise6522/archive/2012/03/03/2377935.html)<br>
