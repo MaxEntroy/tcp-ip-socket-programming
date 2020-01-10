@@ -11,8 +11,10 @@
 
 #define TRUE 1
 #define BACKLOG 15
+#define BUF_SZ 128
 
 static void echo_server(uint16_t port);
+static void do_io_event(int clnt_sfd);
 
 int main(int argc, char* argv[]) {
   if(argc != 2) {
@@ -60,11 +62,18 @@ void echo_server(uint16_t port) {
     printf("[INFO]:[%s:%u] connected.\n", inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
 
     // IO
-
+    do_io_event(clnt_sfd);
 
     close(clnt_sfd);
     printf("[INFO]:[%s:%u] disconnected.\n", inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
   }
 
   close(serv_sfd);
+}
+
+void do_io_event(int clnt_sfd) {
+  char buf[BUF_SZ];
+
+  int nread = read(clnt_sfd, buf, BUF_SZ);
+  write(clnt_sfd, buf, nread);
 }

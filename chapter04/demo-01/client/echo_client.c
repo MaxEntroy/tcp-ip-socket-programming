@@ -9,7 +9,10 @@
 
 #include "common/err.h"
 
+#define BUF_SZ 128
+
 static void echo_client(const char* ip, uint16_t port);
+static void do_io_event(int clnt_sfd);
 
 int main(int argc, char* argv[]) {
   if(argc != 3) {
@@ -42,5 +45,17 @@ void echo_client(const char* ip, uint16_t port) {
   printf("[INFO]:Connected to [%s:%u]\n", ip, port);
 
   // IO
+  do_io_event(clnt_sfd);
+
   close(clnt_sfd);
+}
+
+void do_io_event(int clnt_sfd) {
+  const char* msg = "hello, echo server, i am echo client.";
+  char buf[BUF_SZ];
+
+  write(clnt_sfd, msg, strlen(msg));
+  int nread = read(clnt_sfd, buf, sizeof(buf));
+  buf[nread] = '\0';
+  printf("%s\n", buf);
 }
