@@ -40,16 +40,17 @@ read函数总是在，receive buffer有数据时，立即返回。接收端将�
 - write返回时，我们可以保证应用层数据都可以发送给接收端
 - read返回时，我们不能保证，应用层数据收到了全部希望收到的数据
 
+所以，echo client当中do_io_event没有办法保证，获取到全部的应用层希望收到的数据
 
 q:non-blocking io和blocking io的区别?
 >对于read函数:
-1.1.blocking模式下,receive buffer为空，阻塞
-1.2.non-blocking模式下，receive buffer为空，非阻塞，返回-1(erron为EAGAIN或EWOULDBLOCK)
+- 1.1.blocking模式下,receive buffer为空，阻塞
+- 1.2.non-blocking模式下，receive buffer为空，非阻塞，返回-1(erron为EAGAIN或EWOULDBLOCK)
 对于write函数:
-2.1.blocking模式下，只要应用层数据没有完全拷贝到kernel tcp send buffer，阻塞
-2.2.1.non-blocking模式下，应用层buf <= tcp send buffer，返回应用层buf字节数
-2.2.2.non-blocking模式下，应用层buf > tcp send buffer and tcp send buffer != 0，返回实际拷贝到tcp send buffer的字节数
-2.2.3.non-blocking模式下，应用层buf > tcp send buffer and tcp send buffer == 0，返回-1
+- 2.1.blocking模式下，只要应用层数据没有完全拷贝到kernel tcp send buffer，阻塞
+- 2.2.1.non-blocking模式下，应用层buf <= tcp send buffer，返回应用层buf字节数
+- 2.2.2.non-blocking模式下，应用层buf > tcp send buffer and tcp send buffer != 0，返回实际拷贝到tcp send buffer的字节数
+- 2.2.3.non-blocking模式下，应用层buf > tcp send buffer and tcp send buffer == 0，返回-1
 
 参考<br>
 [浅谈TCP/IP网络编程中socket的行为](https://www.cnblogs.com/promise6522/archive/2012/03/03/2377935.html)<br>
