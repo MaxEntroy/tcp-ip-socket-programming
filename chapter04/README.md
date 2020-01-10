@@ -46,7 +46,7 @@ q:non-blocking io和blocking io的区别?
 >对于read函数:
 - 1.1.blocking模式下,receive buffer为空，阻塞
 - 1.2.non-blocking模式下，receive buffer为空，非阻塞，返回-1(erron为EAGAIN或EWOULDBLOCK)
-对于write函数:
+>对于write函数:
 - 2.1.blocking模式下，只要应用层数据没有完全拷贝到kernel tcp send buffer，阻塞
 - 2.2.1.non-blocking模式下，应用层buf <= tcp send buffer，返回应用层buf字节数
 - 2.2.2.non-blocking模式下，应用层buf > tcp send buffer and tcp send buffer != 0，返回实际拷贝到tcp send buffer的字节数
