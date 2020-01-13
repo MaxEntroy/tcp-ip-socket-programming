@@ -5,11 +5,12 @@ LIBS= $(MYLIBS)
 
 RM= rm -f
 
-ROOT= ..
+STATIC_ROOT= ..
+DYNAMIC_ROOT= /usr/local/thirdparty/zlog-1.2
 
-MYCFLAGS= -I$(ROOT)
-MYLDFLAGS= -L$(ROOT)/common
-MYLIBS= -lerr
+MYCFLAGS= -I$(STATIC_ROOT) -I$(DYNAMIC_ROOT)/include
+MYLDFLAGS= -L$(STATIC_ROOT)/common -L$(DYNAMIC_ROOT)/lib -Wl,-rpath=$(DYNAMIC_ROOT)/lib
+MYLIBS= -lerr -llog -lzlog -lpthread
 
 ECHO_SERVER_T= echo_server
 ECHO_SERVER_O= echo_server.o

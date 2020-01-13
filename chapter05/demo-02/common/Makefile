@@ -3,7 +3,9 @@ CFLAGS= -Wall -Wextra $(MYCFLAGS)
 LDFLAGS= $(MYLDFLAGS)
 LIBS= $(MYLIBS)
 
-MYCFLAGS=
+DYNAMIC_ROOT= /usr/local/thirdparty/zlog-1.2
+
+MYCFLAGS= -I$(DYNAMIC_ROOT)/include
 MYLDFLAGS=
 MYLIBS=
 
@@ -12,15 +14,22 @@ RANLIB= ranlib
 RM= rm -rf
 
 ERR_A= liberr.a
-BASE_O= err.o
+ERR_O= err.o
 
+LOG_A= liblog.a
+LOG_O= log.o
+
+ALL_A= $(ERR_A) $(LOG_A)
 
 # Targets start here
-a: $(ERR_A)
+all: $(ALL_A)
 
+$(ERR_A): $(ERR_O)
+	$(AR) $@ $(ERR_O)
+	$(RANLIB) $@
 
-$(ERR_A): $(BASE_O)
-	$(AR) $@ $(BASE_O)
+$(LOG_A): $(LOG_O)
+	$(AR) $@ $(LOG_O)
 	$(RANLIB) $@
 
 echo:
@@ -33,13 +42,13 @@ echo:
 	@echo "RM= $(RM)"
 
 clean:
-	$(RM) $(ERR_A) $(BASE_O)
+	$(RM) $(ERR_A) $(ERR_O) $(LOG_A) $(LOG_O)
 
 # Convenience targets
-A= a
 c89:
-	$(MAKE) $(A) CC="gcc -std=c89"
+	$(MAKE) $(ALL_A) CC="gcc -std=c89"
 
 .PHONY: a echo clean
 
 err.o: err.c err.h
+log.o: log.c log.h

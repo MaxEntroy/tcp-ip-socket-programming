@@ -8,25 +8,32 @@
 #include <unistd.h>
 
 #include "common/err.h"
+#include "common/log.h"
 
 #define TRUE 1
 #define BACKLOG 15
 #define BUF_SZ 128
 
-static void echo_server(uint16_t port);
+/* echo server */
+static void echo_server(uint16_t port, pzlog log_handler);
+
+/* event handler */
 static void do_io_event(int clnt_sfd);
 
 int main(int argc, char* argv[]) {
-  if(argc != 2) {
-    err_handling(argv[0], "error\nUsage:\t./echo_server port");
+  if(argc != 4) {
+    err_handling(argv[0], "error\nUsage:\t./echo_server port log_path log_cat");
   }
 
-  echo_server(atoi(argv[1]));
+  pzlog log_handler = LOG_INIT(argv[2], argv[3]);
 
+  echo_server(atoi(argv[1]), log_handler);
+
+  LOG_FINI();
   return 0;
 }
 
-void echo_server(uint16_t port) {
+void echo_server(uint16_t port, pzlog log_handler) {
   // create a socket
   int serv_sfd = socket(PF_INET, SOCK_STREAM, 0);
   if(serv_sfd == -1) {
@@ -55,17 +62,17 @@ void echo_server(uint16_t port) {
   memset(&clnt_addr, 0, sizeof(clnt_addr));
   socklen_t clnt_addr_len = 0;
   while(TRUE) {
-    printf("[INFO]:Echo Server[localhost:%u] waiting...\n", port);
+    LOG(log_handler, INFO, "Echo Server[localhost:%u] waiting...", port);
 
     // accept
     int clnt_sfd = accept(serv_sfd, (struct sockaddr*) &clnt_addr, &clnt_addr_len);
-    printf("[INFO]:[%s:%u] connected.\n", inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
+    LOG(log_handler, INFO, "[%s:%u] connected.", inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
 
     // IO
     do_io_event(clnt_sfd);
 
     close(clnt_sfd);
-    printf("[INFO]:[%s:%u] disconnected.\n", inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
+    LOG(log_handler, INFO, "[%s:%u] disconnected.", inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
   }
 
   close(serv_sfd);
