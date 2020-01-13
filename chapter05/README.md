@@ -58,3 +58,13 @@ q:echo_server实现的依据?
 >server端无法得知client端结束的依据，只能根据以下2种case判断
 1.读结束(磁盘io适合，有eof作为结束标志)
 2.读失败(等待client端结束，关闭socket，server端知道读端结束了)
+
+### demo-02
+
+- 支持zlog
+
+### demo-03
+
+- 测试zlog文件转档
+
+zlog根据时间戳就行文件转档确实很方便
