@@ -1,15 +1,16 @@
 CXX= g++ -std=c++11
-CXXFLAGS= -Wall -Wextra $(MYCFLAGS)
+CXXFLAGS= -g -Wall -Wextra $(MYCFLAGS)
 LDFLAGS= $(MYLDFLAGS)
 LIBS= $(MYLIBS)
 
 RM= rm -f
 
-ROOT= ..
+STATIC_ROOT= ..
+DYNAMIC_ROOT= /usr/local/thirdparty
 
-MYCFLAGS= -I$(ROOT)
-MYLDFLAGS= -L$(ROOT)/common
-MYLIBS= -lerr
+MYCFLAGS= -I$(STATIC_ROOT)
+MYLDFLAGS= -L$(STATIC_ROOT)/common -L$(STATIC_ROOT)/proto -L$(DYNAMIC_ROOT)/protobuf/lib
+MYLIBS= -lerr -lcal -lprotobuf -lpthread
 
 ECHO_CLIENT_T= echo_client
 ECHO_CLIENT_O= echo_client.o
@@ -18,7 +19,7 @@ ECHO_CLIENT_O= echo_client.o
 t: $(ECHO_CLIENT_T)
 
 $(ECHO_CLIENT_T): $(ECHO_CLIENT_O)
-	$(CC) -o $@ $(LDFLAGS) $(ECHO_CLIENT_O) $(LIBS)
+	$(CXX) -o $@ $(LDFLAGS) $(ECHO_CLIENT_O) $(LIBS)
 
 echo:
 	@echo "CXX= $(CC)"

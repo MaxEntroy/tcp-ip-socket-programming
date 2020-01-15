@@ -2,6 +2,8 @@
 #include <cstdlib>
 #include <cstring>
 
+#include <string>
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -10,6 +12,8 @@
 extern "C" {
 #include "common/err.h"
 }
+#include "proto/cal_req.pb.h"
+#include "proto/cal_res.pb.h"
 
 #define TRUE 1
 #define BACKLOG 15
@@ -17,6 +21,7 @@ extern "C" {
 
 static void echo_server(uint16_t port);
 static void do_io_event(int clnt_sfd);
+static void do_cal(const cal::CalRequest& req, cal::CalResponse* p_res);
 
 int main(int argc, char* argv[]) {
   if(argc != 2) {
@@ -74,10 +79,53 @@ void echo_server(uint16_t port) {
 }
 
 void do_io_event(int clnt_sfd) {
+  // recv from client
   char buf[BUF_SZ];
-  int nread = 0;
+  ssize_t nread = read(clnt_sfd, buf, BUF_SZ);
 
-  while((nread = read(clnt_sfd, buf, BUF_SZ)) > 0) {
-    write(clnt_sfd, buf, nread);
+  cal::CalRequest req;
+  req.ParseFromArray(buf, nread);
+
+  if(!req.has_seqno() || !req.has_left() || !req.has_right() || !req.has_optr()) {
+    fprintf(stderr, "%s\n", "Invalid CalRequest.");
+    return;
   }
+
+  // do caculation
+  cal::CalResponse res;
+  do_cal(req, &res);
+
+  // send to client
+  int sz = res.ByteSize();
+  res.SerializeToArray(buf, sz);
+
+  write(clnt_sfd, buf, sz);
+}
+
+void do_cal(const cal::CalRequest& req, cal::CalResponse* p_res) {
+  std::string seqno = req.seqno();
+  int left = req.left();
+  int right = req.right();
+  const char* optr = req.optr().c_str();
+
+  int result = 0;
+  switch(optr[0]) {
+    case '+': result = left + right; break;
+    case '-': result = left - right; break;
+    case '*': result = left * right; break;
+    case '/':
+              {
+                if(!right) {
+                  fprintf(stderr, "%s\n", "zero can not be divisor.");
+                  result = 0;
+                }
+                else
+                  result = left / right;
+                break;
+              }
+    default: result = 0; break;
+  }
+
+  p_res->set_seqno(seqno);
+  p_res->set_result(result);
 }

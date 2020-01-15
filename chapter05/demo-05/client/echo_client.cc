@@ -2,6 +2,8 @@
 #include <cstdlib>
 #include <cstring>
 
+#include <string>
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -11,12 +13,13 @@
 extern "C" {
 #include "common/err.h"
 }
+#include "proto/cal_req.pb.h"
+#include "proto/cal_res.pb.h"
 
-#define BUF_SZ 128
+#define BUF_SZ 32
 
 static void echo_client(const char* ip, uint16_t port);
 static void do_io_event(int clnt_sfd);
-static ssize_t Read(int fd, char* buf, size_t count);
 
 int main(int argc, char* argv[]) {
   if(argc != 3) {
@@ -55,34 +58,37 @@ void echo_client(const char* ip, uint16_t port) {
 }
 
 void do_io_event(int clnt_sfd) {
-  const char* msg = "hello, echo server, i am echo client.";
-  size_t msg_len = strlen(msg);
+  cal::CalRequest req;
+
+  // init req
   char buf[BUF_SZ];
+  snprintf(buf, BUF_SZ, "%u", (unsigned)time(NULL));
+  int left_arg = 3;
+  int right_arg = 4;
+  const char* optr = "*";
 
-  write(clnt_sfd, msg, msg_len);
-  Read(clnt_sfd, buf, msg_len);
-  buf[msg_len] = '\0';
-  printf("%s\n", buf);
-}
+  req.set_seqno(buf);
+  req.set_left(left_arg);
+  req.set_right(right_arg);
+  req.set_optr(optr);
+  printf("seqno: %s; left: %d; right: %d; optr: %s\n", req.seqno().c_str(), req.left(), req.right(), req.optr().c_str());
 
-ssize_t Read(int fd, char* buf, size_t count) {
-  size_t nread = 0;
-  while(nread < count) {
-    ssize_t n = read(fd, buf+nread, count);
-    if(n == -1) {
-      if(errno == EINTR) {
-        n = 0;
-      }
-      else {
-        return -1;
-      }
-    }
-    else if(n == 0) {
-      break;
-    }
+  // send to server
+  int sz = req.ByteSize();
+  req.SerializeToArray(buf, sz);
 
-    nread += n;
+  write(clnt_sfd, buf, sz);
+
+  // recv from server
+  ssize_t nread = read(clnt_sfd, buf, BUF_SZ);
+
+  cal::CalResponse res;
+  res.ParseFromArray(buf, nread);
+
+  if(!res.has_seqno() || !res.has_result()) {
+    fprintf(stderr, "%s", "Invalid CalResponse.");
+    return;
   }
-  return nread;
-}
 
+  printf("seqno: %s; result: %d\n", res.seqno().c_str(), res.result());
+}
