@@ -1,0 +1,10 @@
+syntax = "proto2";
+
+package cal;
+
+message CalRequest {
+  required string seqno = 1;
+  optional int32 left = 2;
+  optional int32 right = 3;
+  optional string optr = 4;
+}
