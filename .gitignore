@@ -32,3 +32,10 @@
 *.app
 
 bin/
+
+# ignore build64_release
+build64_release/
+blade-bin
+.Building.lock
+.sconsign.dblite
+.blade.test.stamp
