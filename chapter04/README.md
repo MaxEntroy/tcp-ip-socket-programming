@@ -109,3 +109,7 @@ q:echo_server当中的do_io_event存在哪些问题?
 参考<br>
 [浅谈TCP/IP网络编程中socket的行为](https://www.cnblogs.com/promise6522/archive/2012/03/03/2377935.html)<br>
 [Unix/Linux中的read和write函数](https://www.cnblogs.com/xiehongfeng100/p/4619451.html)
+
+- demo-02
+
+采用blade-build编译 使用c++兼容c的形式
