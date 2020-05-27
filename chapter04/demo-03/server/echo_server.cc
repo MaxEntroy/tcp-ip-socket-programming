@@ -74,7 +74,9 @@ void echo_server(uint16_t port) {
 
 void do_io_event(int clnt_sfd) {
   char buf[BUF_SZ];
+  int nread = 0;
 
-  int nread = read(clnt_sfd, buf, BUF_SZ);
-  write(clnt_sfd, buf, nread);
+  while((nread = read(clnt_sfd, buf, BUF_SZ)) != 0) {
+    write(clnt_sfd, buf, nread);
+  }
 }

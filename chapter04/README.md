@@ -113,3 +113,7 @@ q:echo_server当中的do_io_event存在哪些问题?
 - demo-02
 
 采用blade-build编译 使用c++兼容c的形式
+
+- demo-03
+
+修复echo_server do_io_event，实现while-loop。这里参考书上的实现，这样可以保证服务端不会丢失客户端的数据。但是客户端的问题并没有解决

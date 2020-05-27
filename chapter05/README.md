@@ -1,4 +1,11 @@
-### demo-01
+## chapter05 基于TCP的服务器端/客户端(2)
+
+### Basic
+
+
+### 实践
+
+- demo-01
 
 这个demo解决了chapter04/demo-01中提到的io_event的问题,我们看下实现
 
@@ -59,18 +66,18 @@ q:echo_server实现的依据?
 1.读结束(磁盘io适合，有eof作为结束标志)
 2.读失败(等待client端结束，关闭socket，server端知道读端结束了)
 
-### demo-02
+- demo-02
 
-- 支持zlog
+支持zlog
 
-### demo-03
+- demo-03
 
 - 测试zlog文件转档
 
 zlog根据时间戳就行文件转档确实很方便
 
 
-### demo-04
+- demo-04
 
 q:为什么发送结构体，不是好的数据通信方式？好的数据通信方式又有哪些标准？
 >先说好的数据通信方式：可扩展，跨语言，跨平台
@@ -81,7 +88,7 @@ q:cstdio and stdio.h的选择?
 >采用陈硕的建议，除了cpp标准库，其余都采用.h的形式
 需要特别注意的是，c兼容的库，要注意变量是否在std中，我看到的应该都是在全局命名空间中
 
-### demo-05/demo-05-a
+- demo-05/demo-05-a
 
 本小节采用pb实现，避免上文提到的struct 作为data interchange format的问题。
 本质上来说，data interchage format显然是应用从层的协议
