@@ -98,7 +98,9 @@ q:non-blocking io和blocking io的区别?
 
 - demo-02
 
-采用blade-build编译 使用c++兼容c的形式
+采用blade-build编译 使用c++兼容c的形式, 具体使用一下语法点
+1. gflags/glog/gtest三件套
+2. 使用c++流式io
 
 - demo-03
 
