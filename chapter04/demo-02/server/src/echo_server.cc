@@ -1,36 +1,34 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#include "common/err.h"
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+
+DEFINE_int32(port, 54321, "listening port");
+DEFINE_int32(backlog, 10, "listening backlog");
 
 #define TRUE 1
-#define BACKLOG 15
 #define BUF_SZ 128
 
-static void echo_server(uint16_t port);
+static void echo_server(int port, int backlog);
 static void do_io_event(int clnt_sfd);
 
 int main(int argc, char* argv[]) {
-  if(argc != 2) {
-    err_handling(argv[0], "error\nUsage:\t./echo_server port");
-  }
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
+  google::InitGoogleLogging(argv[0]);
 
-  echo_server(atoi(argv[1]));
+  echo_server(FLAGS_port, FLAGS_backlog);
 
   return 0;
 }
 
-void echo_server(uint16_t port) {
+void echo_server(int port, int backlog) {
   // create a socket
   int serv_sfd = socket(PF_INET, SOCK_STREAM, 0);
   if(serv_sfd == -1) {
-    perr_handling("socket", "error");
+    LOG(ERROR) << "socket error";
   }
 
   // bind
@@ -42,13 +40,13 @@ void echo_server(uint16_t port) {
 
   int ret = bind(serv_sfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr));
   if(ret == -1) {
-    perr_handling("bind", "error");
+    LOG(ERROR) << "bind error";
   }
 
   // listen
-  ret = listen(serv_sfd, BACKLOG);
+  ret = listen(serv_sfd, backlog);
   if(ret == -1) {
-    perr_handling("listen", "error");
+    LOG(ERROR) << "listen error";
   }
 
   // serving-loop
@@ -56,17 +54,17 @@ void echo_server(uint16_t port) {
   memset(&clnt_addr, 0, sizeof(clnt_addr));
   socklen_t clnt_addr_len = 0;
   while(TRUE) {
-    printf("[INFO]:Echo Server[localhost:%u] waiting...\n", port);
+    LOG(INFO) << "Echo Server[localhost:" << port << "] waiting...";
 
     // accept
     int clnt_sfd = accept(serv_sfd, (struct sockaddr*) &clnt_addr, &clnt_addr_len);
-    printf("[INFO]:[%s:%u] connected.\n", inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
+    LOG(INFO) << "[" << inet_ntoa(clnt_addr.sin_addr) << ":" << ntohs(clnt_addr.sin_port) << "] connected." << std::endl;
 
     // IO
     do_io_event(clnt_sfd);
 
     close(clnt_sfd);
-    printf("[INFO]:[%s:%u] disconnected.\n", inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
+    LOG(INFO) << "[" << inet_ntoa(clnt_addr.sin_addr) << ":" << ntohs(clnt_addr.sin_port) << "] disconnected." << std::endl;
   }
 
   close(serv_sfd);
