@@ -101,7 +101,3 @@ q:non-blocking io和blocking io的区别?
 采用blade-build编译 使用c++兼容c的形式, 具体使用一下语法点
 1. gflags/glog/gtest三件套
 2. 使用c++流式io
-
-- demo-03
-
-修复echo_server do_io_event，实现while-loop。这里参考书上的实现，这样可以保证服务端不会丢失客户端的数据。但是客户端的问题并没有解决
