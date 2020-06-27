@@ -20,7 +20,6 @@ int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
 
   echo_server(FLAGS_port, FLAGS_backlog);
-
   return 0;
 }
 
