@@ -150,6 +150,25 @@ q:实践过程中的问题？
 尝试直接使用shared_ptr,后来查阅写cpp-primer,Best practices: Most applications should use a library container rather than dynamically allocated arrays. Using a container is easier, less likely to contain memorymanagement bugs, and is likely to give better performance. 
 顿悟，采用vector解决
 
+```cpp
+void io_read_n(int fd, char buf[], int n) {
+  int total = 0;
+  while(total < n) {
+    int nread = read(fd, buf+total, n - total);
+    if (nread == -1) {
+      if (errno == EINTR)
+        nread = 0;
+      else
+        return;
+    }
+    else if (nread == 0)
+      break;
+
+    total += nread;
+  }
+}
+```
+
 ### 实践
 
 - demo-01
@@ -162,11 +181,11 @@ q:实践过程中的问题？
 
 - demo-02
 
-1.禁用cpp io，使用c io。不使用glog
-2.目前保持这样的规范
-2.1. 使用g++进行编译
-2.2. 使用gtest/gflags
-2.3. dynamic memory使用c++特性
+目前保持这样的规范
+1. 使用g++进行编译
+2. 使用gtest/gflags，暂时不用glog
+3. dynamic memory使用c++特性
+4. io使用c特性，禁用c++特性
 
 - demo-02-old
 
