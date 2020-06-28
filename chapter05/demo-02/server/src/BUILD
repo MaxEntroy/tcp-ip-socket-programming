@@ -4,7 +4,8 @@ cc_binary(
     "echo_server.cc"
   ],
   deps = [
-    "#glog",
+    "//common:err",
+    "//common:io_aux",
     "#gflags",
     "#pthread"
   ]

@@ -5,9 +5,8 @@
 
 void io_read_n(int fd, char buf[], int n) {
   int total = 0;
-  int nread = 0;
   while(total < n) {
-    nread = read(fd, buf+total, BUF_SZ);
+    int nread = read(fd, buf+total, n - total);
     if (nread == -1) {
       if (errno == EINTR)
         nread = 0;
