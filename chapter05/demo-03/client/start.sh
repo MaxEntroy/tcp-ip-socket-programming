@@ -1,1 +1,3 @@
-./echo_client 127.0.0.1 39228 > /dev/null &
+#!/bin/bash
+
+../build64_release/client/src/echo_client --flagfile=./conf/service.conf

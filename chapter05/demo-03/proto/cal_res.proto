@@ -1,0 +1,8 @@
+syntax = "proto2";
+
+package cal;
+
+message CalRes {
+  required string seqno = 1;
+  optional int32 result = 2;
+};

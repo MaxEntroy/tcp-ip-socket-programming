@@ -7,6 +7,10 @@ q:本章是如何组织的?
 5.2.TCP原理
 5.3.基于Windows的实现
 
+### 实践
+
+- demo-01
+
 q:目前实现的echo server有什么问题?
 >我们分别看下server side和client side实现
 以上的实现都具有一个显著特点就是:read只调用一次,那么这回导致什么问题呢?
@@ -81,6 +85,12 @@ void read_n(int fd, char buf[], int n) {
   }
 }
 ```
+
+- demo-01-old
+
+老版本纯c的实现
+
+- demo-02
 
 q:对于echo server目前的解决方案,有什么问题?
 >对于这个case,我们可以知道client发送的数据大小,如果要是不能直接获取,怎么办?
@@ -169,18 +179,6 @@ void io_read_n(int fd, char buf[], int n) {
 }
 ```
 
-### 实践
-
-- demo-01
-
-这个demo解决上一章echo server实现没有考虑tcp传输特性的问题, read_n函数的实现要小心,buf每次需要更新读取首地址.
-
-- demo-01-old
-
-老版本纯c的实现
-
-- demo-02
-
 目前保持这样的规范
 1. 使用g++进行编译
 2. 使用gtest/gflags，暂时不用glog
@@ -192,6 +190,36 @@ void io_read_n(int fd, char buf[], int n) {
 支持zlog
 
 - demo-03
+
+q:demo-02的实现有什么问题？
+1. 没有问题
+2. 但是非常繁琐，相当于自己实现了序列化的过程。
+
+q:demo-02回顾？
+1. 先强调demo-02当中忽略的一点，传输层为什么要选择tcp协议？因为,后端服务之间的通信，为了减少网络连接打开和关闭带来的开销，一般都会选用tcp长连接作为通信传输协议的
+2. tcp会带来什么问题？TCP/IP由于是长连接且是面向连接设计，因此需要设计应用层的规范。具体来说tcp的传输特性是一种没有边界的字节流，因此必须通过设计应用层协议来判断一个包是否收齐
+
+q:对于demo-03的问题如何解决？
+1. 序列化的问题，可以选用一种通用的数据交换格式，后者会提供序列化和反序列化的方法，不用自己实现，即数据交换协议不用自己实现。demo-02的数据交换协议完全是自己设计的(每个操作数的大小，操作符的大小。)
+2. 序列化的问题只是解决了数据交换格式的协议，这只是应用层协议设计的一部分。对于tcp没有边界字节流的特性，任然要进行应用层设计。(demo-02的设计，不仅规定了操作数的大小，也规定了包的顺序，我们知道解析第二个字段，4字节，可以获得实际数据包体大小，然后再去解析操作数。)因此，这里任然需要设计一个协议，来保证可以获得完整的数据包。
+
+q:应用层协议应该如何设计？
+1. 参考1当中的文章，从0到1，设计并实现了了数据体，数据头。
+2. 参考2当中的文章，统一采用pb来作为包头和包体，好处是避免了自己实现序列化方法。同时，规定了8个字节，作为包头标识，和包头长度。(仅仅通过一个pb，我们没法确定这个包体到底有多大。参考一是通过结构体，可以进行准确的计算得知，当然，如果前者有string这样的变量也不行，但是它的包头结构体只有一个uint32_t，这个是可以确定大小。)
+3. 终归到底，需要考虑tcp的传输特性来进行协议的设计
+4. 结合倒数第二篇参考文献，原来tcp传输特性导致的数据包无法识别的问题(字节流，没有边界，自然无法识别哪里开始，哪里结束)叫做粘包
+5. 结合最后一篇文献，讲到了，有些地方需要外部系统进行设计，有些则是pb解决的
+
+参考<br>
+[一种简单应用通信协议的设计](https://zhuanlan.zhihu.com/p/84749337)<br>
+[开源项目SMSS发开指南（三）——protobuf协议设计](https://www.cnblogs.com/learnhow/p/12200200.html)<br>
+[Netty(三) 什么是 TCP 拆、粘包？如何解决？](https://crossoverjie.top/2018/08/03/netty/Netty(3)TCP-Sticky/)<br>
+[Protobuf协议在Nebula的应用](https://zhuanlan.zhihu.com/p/65520632)<br>
+[结合RPC框架通信谈 netty如何解决TCP粘包问题](https://cloud.tencent.com/developer/article/1187023)<br>
+[什么 Protobuf 的默认序列化格式没有包含消息的长度与类型？](https://www.cnblogs.com/Solstice/archive/2011/04/13/2014362.html)<br>
+[Is it possible to use an std::string for read()?](https://stackoverflow.com/questions/10105591/is-it-possible-to-use-an-stdstring-for-read)
+
+- demo-03-old
 
 - 测试zlog文件转档
 

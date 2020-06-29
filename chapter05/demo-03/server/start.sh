@@ -1,1 +1,3 @@
-./echo_server 39228 ./log.conf echo_server &
+#!/bin/bash
+
+../build64_release/server/src/echo_server --flagfile=./conf/service.conf
