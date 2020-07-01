@@ -86,10 +86,6 @@ void read_n(int fd, char buf[], int n) {
 }
 ```
 
-- demo-01-old
-
-老版本纯c的实现
-
 - demo-02
 
 q:对于echo server目前的解决方案,有什么问题?
@@ -185,10 +181,6 @@ void io_read_n(int fd, char buf[], int n) {
 3. dynamic memory使用c++特性
 4. io使用c特性，禁用c++特性
 
-- demo-02-old
-
-支持zlog
-
 - demo-03
 
 q:demo-02的实现有什么问题？
@@ -210,6 +202,20 @@ q:应用层协议应该如何设计？
 4. 结合倒数第二篇参考文献，原来tcp传输特性导致的数据包无法识别的问题(字节流，没有边界，自然无法识别哪里开始，哪里结束)叫做粘包
 5. 结合最后一篇文献，讲到了，有些地方需要外部系统进行设计，有些则是pb解决的
 
+q:我的方案？
+1. 对于包体长度，虽然可以指定4字节标示，但是我还是想放到一个规范的结构里面来表示
+2. 规范的结构，可以放pb，但是pb序列化之后的大小又没法确定
+3. 直接研究proto buffer encoding，看下是否能找到一个方案确定大小，结论如下：
+3.1. binary format编码，key(field_number + wire_type) + value
+3.2. 其中field_number由于在1-15内，所以整体key整体占用1byte, msg_length如果采用fix32形式，固定长度为4bytes。整个包体序列化(binary format)的长度为5 bytes.
+
+最终，我可以给出一个序列化之后确定长度的包体表示
+```proto
+message MsgHead = {
+  required fixed32 msg_length = 1;
+}
+```
+
 参考<br>
 [一种简单应用通信协议的设计](https://zhuanlan.zhihu.com/p/84749337)<br>
 [开源项目SMSS发开指南（三）——protobuf协议设计](https://www.cnblogs.com/learnhow/p/12200200.html)<br>
@@ -218,13 +224,6 @@ q:应用层协议应该如何设计？
 [结合RPC框架通信谈 netty如何解决TCP粘包问题](https://cloud.tencent.com/developer/article/1187023)<br>
 [什么 Protobuf 的默认序列化格式没有包含消息的长度与类型？](https://www.cnblogs.com/Solstice/archive/2011/04/13/2014362.html)<br>
 [Is it possible to use an std::string for read()?](https://stackoverflow.com/questions/10105591/is-it-possible-to-use-an-stdstring-for-read)
-
-- demo-03-old
-
-- 测试zlog文件转档
-
-zlog根据时间戳就行文件转档确实很方便
-
 
 - demo-04
 
