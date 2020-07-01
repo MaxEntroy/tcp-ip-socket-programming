@@ -6,6 +6,7 @@ cc_binary(
   deps = [
     "//common:err",
     "//common:io_aux",
+    "//proto:cal_proto",
     "#gflags",
     "#pthread"
   ]

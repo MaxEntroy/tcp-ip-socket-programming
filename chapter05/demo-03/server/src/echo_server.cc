@@ -12,6 +12,9 @@
 #include "common/cal_protocol.h"
 #include "common/err.h"
 #include "common/io_aux.h"
+#include "build64_release/proto/cal_header.pb.h"
+#include "build64_release/proto/cal_req.pb.h"
+#include "build64_release/proto/cal_res.pb.h"
 
 DEFINE_int32(port, 54321, "listening port");
 DEFINE_int32(backlog, 10, "listening backlog");
@@ -20,8 +23,9 @@ DEFINE_int32(backlog, 10, "listening backlog");
 
 static void echo_server(int port, int backlog);
 static void do_io_event(int clnt_sfd);
-static void do_read_buf(int clnt_sfd, char buf[], char& optr, std::vector<int>& opnd_arr);
-static int do_cal(char optr, const std::vector<int>& opnd_arr);
+static void do_read(int clnt_sfd, cal::CalReq& req);
+static void do_cal(const cal::CalReq& req, cal::CalRes& res);
+static void do_write(int clnt_sfd, const cal::CalRes& res);
 
 int main(int argc, char* argv[]) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -77,57 +81,81 @@ void echo_server(int port, int backlog) {
 }
 
 void do_io_event(int clnt_sfd) {
-  char buf[BUF_SZ];
+  cal::CalReq req;
+  cal::CalRes res;
 
-  char optr = '\0';
-  std::vector<int> opnd_arr;
+  do_read(clnt_sfd, req);
 
-  do_read_buf(clnt_sfd, buf, optr, opnd_arr);
+  do_cal(req, res);
 
-  int res = do_cal(optr, opnd_arr);
-
-  write(clnt_sfd, (char*)&res, RES_RESULT_SZ);
+  do_write(clnt_sfd, res);
 }
 
-void do_read_buf(int clnt_sfd, char buf[], char& optr, std::vector<int>& opnd_arr) {
-  io_read_n(clnt_sfd, buf, REQ_OPTR_SZ + REQ_OPND_NUM_SZ);
-  optr = *((char*)buf);
+void do_read(int clnt_sfd, cal::CalReq& req) {
+  // recv cal header
+  char buf[MSG_HEAD_SZ];
+  io_read_n(clnt_sfd, buf, MSG_HEAD_SZ);
+  cal::CalHeader cal_header;
+  cal_header.ParseFromArray(buf, MSG_HEAD_SZ);
 
-  int opnd_num = *((int*)(buf + REQ_OPTR_SZ));
-  opnd_arr.resize(opnd_num);
+  // recv cal req
+  int req_len = cal_header.msg_len();
+  std::string req_buf(req_len, ' ');
+  io_read_n(clnt_sfd, &req_buf[0], req_len);
+  req.ParseFromString(req_buf);
+}
 
-  io_read_n(clnt_sfd, buf + REQ_OPTR_SZ + REQ_OPND_NUM_SZ, opnd_num * REQ_OPND_SZ);
+void do_cal(const cal::CalReq& req, cal::CalRes& res) {
+  res.set_seqno("2");
 
-  for(int i = 0; i < opnd_num; ++i) {
-    opnd_arr[i] = *((int*)(buf + REQ_OPTR_SZ + REQ_OPND_NUM_SZ + i * REQ_OPND_SZ));
+  int sz = req.opnd_arr_size();
+  if (sz == 0) {
+    res.set_result(0);
+    return;
   }
-}
+  else if (sz == 1) {
+    res.set_result(req.opnd_arr(0));
+    return;
+  }
 
-int do_cal(char optr, const std::vector<int>& opnd_arr) {
-  int sz = opnd_arr.size();
-  if (sz == 0)
-    return 0;
-  else if (sz == 1)
-    return opnd_arr[0];
-
-  int res = opnd_arr[0];
-  switch(optr) {
+  int ret = req.opnd_arr(0);
+  switch(req.optr()[0]) {
     case '+' : {
-      for(int i = 1; i < sz; ++i) res += opnd_arr[i];
+      for(int i = 1; i < sz; ++i) ret += req.opnd_arr(i);
+      res.set_result(ret);
       break;
     }
     case '-' : {
-      for(int i = 1; i < sz; ++i) res -= opnd_arr[i];
+      for(int i = 1; i < sz; ++i) ret -= req.opnd_arr(i);
+      res.set_result(ret);
       break;
     }
     case '*' : {
-      for(int i = 1; i < sz; ++i) res *= opnd_arr[i];
+      for(int i = 1; i < sz; ++i) ret *= req.opnd_arr(i);
+      res.set_result(ret);
       break;
     }
     case '/' : {
-      for(int i = 1; i < sz; ++i) res /= opnd_arr[i];
+      for(int i = 1; i < sz; ++i) ret /= req.opnd_arr(i);
+      res.set_result(ret);
       break;
     }
   }
-  return res;
+  return;
+}
+
+void do_write(int clnt_sfd, const cal::CalRes& res) {
+  std::string res_buf;
+  res.SerializeToString(&res_buf);
+
+  cal::CalHeader res_header;
+  res_header.set_msg_len(res_buf.size());
+  std::string header_buf;
+  res_header.SerializeToString(&header_buf);
+
+  // send cal header
+  write(clnt_sfd, header_buf.data(), header_buf.size());
+
+  // send cal res
+  write(clnt_sfd, res_buf.data(), res_buf.size());
 }
