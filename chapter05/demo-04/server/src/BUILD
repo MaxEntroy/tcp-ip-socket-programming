@@ -1,12 +1,13 @@
-cc_binary(
-  name = "echo_server",
+cc_library(
+  name = "cal_server",
   srcs = [
-    "echo_server.cc"
+    "cal_server.cc"
   ],
   deps = [
-    "//common:err",
+    "//common:tcp_server",
     "//common:io_aux",
-    "//proto:cal_proto",
+    "//common:err",
+    "//app_protocol:cal_proto",
     "#gflags",
     "#pthread"
   ]
