@@ -31,7 +31,7 @@ void TcpClient::Init(const char* ip, int port) {
 }
 
 void TcpClient::Run() {
-  HandleIoEvent();
+  HandleIoEvent(clnt_sfd_);
 }
 
 } // namespace utils

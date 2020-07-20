@@ -1,13 +1,24 @@
 cc_binary(
-  name = "echo_client",
+  name = "CalClient",
   srcs = [
-    "echo_client.cc"
+    "main.cc",
   ],
   deps = [
-    "//common:io_aux",
-    "//common:err",
-    "//proto:cal_proto",
+    ":cal_client",
     "#gflags",
     "#pthread"
+  ]
+)
+
+cc_library(
+  name = "cal_client",
+  srcs = [
+    "cal_client.cc"
+  ],
+  deps = [
+    "//common:tcp_client",
+    "//common:io_aux",
+    "//common:err",
+    "//app_protocol:cal_proto",
   ]
 )

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-killall echo_server
+killall CalServer

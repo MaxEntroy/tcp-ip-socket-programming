@@ -236,6 +236,19 @@ message MsgHead = {
 }
 ```
 
+- demo-04
+
+在demo-03的基础上做了如下调整：
+1. 自己封装通用tcp server/tcp client
+2. 业务放自己派生对象，进行业务处理
+
+应用层的问题已经解决了，这个demo主要提供一个自己封装的c++版本
+
+具体实现的时候：
+1. 对象封装RAII
+2. 采用oo来组织业务逻辑(这里用回调也可以)
+3. 采用NVI手法。之所以使用oo，我的考虑是NVI手法可以在public接口当中规定语义，并且oo能让业务方更关注自己的逻辑
+
 参考<br>
 [一种简单应用通信协议的设计](https://zhuanlan.zhihu.com/p/84749337)<br>
 [开源项目SMSS发开指南（三）——protobuf协议设计](https://www.cnblogs.com/learnhow/p/12200200.html)<br>

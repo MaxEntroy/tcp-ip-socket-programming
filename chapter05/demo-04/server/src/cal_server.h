@@ -9,17 +9,17 @@ namespace cal {
 
 class CalServer : public utils::TcpServer {
  public:
+  CalServer() = default;
+
   CalServer(const CalServer&) = delete;
   CalServer& operator=(const CalServer&) = delete;
 
  private:
    void HandleIoEvent(int) override;
 
-   void DoRecv(int clnt_sfd, CalReq* p_req);
-
-   void DoCal(const CalReq& req, CalRes* p_res);
-
-   void DoSend(int clnt_sfd, const CalRes& res);
+   void RecvReq(int clnt_sfd, CalReq* req);
+   void DoCal(const CalReq& req, CalRes* res);
+   void SendRes(int clnt_sfd, const CalRes& res);
 }; // class CalServer
 
 }; // namespace cal

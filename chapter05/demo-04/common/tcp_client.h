@@ -10,7 +10,7 @@ class TcpClient {
  public:
   TcpClient();
 
-  ~TcpClient() { close(clnt_sfd_); }
+  virtual ~TcpClient() { close(clnt_sfd_); }
   TcpClient(const TcpClient&) = delete;
   TcpClient& operator=(const TcpClient&) = delete;
 
@@ -19,7 +19,7 @@ class TcpClient {
   void Run();
 
  private:
-  virtual void HandleIoEvent() = 0;
+  virtual void HandleIoEvent(int) = 0;
 
  private:
   int clnt_sfd_;

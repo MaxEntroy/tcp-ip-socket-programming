@@ -1,3 +1,15 @@
+cc_binary(
+  name = "CalServer",
+  srcs = [
+    "main.cc",
+  ],
+  deps = [
+    ":cal_server",
+    "#gflags",
+    "#pthread"
+  ]
+)
+
 cc_library(
   name = "cal_server",
   srcs = [
@@ -8,7 +20,5 @@ cc_library(
     "//common:io_aux",
     "//common:err",
     "//app_protocol:cal_proto",
-    "#gflags",
-    "#pthread"
   ]
 )

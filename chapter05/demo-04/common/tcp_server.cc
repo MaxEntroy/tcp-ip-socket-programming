@@ -42,7 +42,7 @@ void TcpServer::EventLoop() {
   socklen_t clnt_addr_len = 0;
 
   while(1) {
-    printf("Caculate server[localhost:%d] waiting...\n", ntohs(serv_addr_.sin_port));
+    printf("Tcp server[localhost:%d] waiting...\n", ntohs(serv_addr_.sin_port));
 
     // accept
     int clnt_sfd = accept(listen_sfd_, (struct sockaddr*) &clnt_addr, &clnt_addr_len);

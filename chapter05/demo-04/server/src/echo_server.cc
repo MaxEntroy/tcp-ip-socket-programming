@@ -141,7 +141,6 @@ void do_cal(const cal::CalReq& req, cal::CalRes& res) {
       break;
     }
   }
-  return;
 }
 
 void do_write(int clnt_sfd, const cal::CalRes& res) {
