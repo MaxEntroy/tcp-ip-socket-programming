@@ -28,6 +28,7 @@ q:tcp的四次挥手？
 1. demo-01解决了echo server没有考虑tcp传输特性的问题
 2. demo-02自己设计应用层协议，解决了calculator.
 3. demo-03还是自己设计应用层协议，采用pb + MSG_HEAD_SZ来作为应用层协议
+4. demo-04采用oo方式封装了一个tcp server/client, 然后进行业务的开发
 
 - demo-01
 
