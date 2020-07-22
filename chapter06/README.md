@@ -24,7 +24,7 @@ q:udp的高效实用？
 这么看，如果是**小包传输，且链接频繁**可以考虑使用udp协议
 
 q:udp socket有哪些特点？
-1. udp socket不维护状态，因此没有listen and accept过程。udp socket只有创建和数据发送的过程
+1. udp socket不维护状态，因此没有listen and connect/accept过程。udp socket只有创建和数据发送的过程(没有请求连接和请求受理的过程)
 2. udp socket对于client/server均只有一个socket，其实从udp socket本身来说，没有client/server区别。是对等通信的方式，client/server的划分是我们结合业务来说的
 
 q:udp socket io?
