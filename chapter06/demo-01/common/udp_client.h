@@ -23,7 +23,7 @@ class UdpClient {
 
  private:
   int sfd_;
-  struct sockaddr_in server_addr_;
+  struct sockaddr_in serv_addr_;
 }; // class UdpClient
 
 } // namespace utils
