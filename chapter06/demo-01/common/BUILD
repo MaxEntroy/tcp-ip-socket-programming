@@ -11,7 +11,9 @@ cc_library(
   srcs = [
     "udp_server.cc"
   ],
-  deps = []
+  deps = [
+    ":err"
+  ]
 )
 
 cc_library(
@@ -19,5 +21,7 @@ cc_library(
   srcs = [
     "udp_client.cc"
   ],
-  deps = []
+  deps = [
+    ":err"
+  ]
 )

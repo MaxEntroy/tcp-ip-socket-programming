@@ -19,7 +19,7 @@ class UdpClient {
   void Run();
 
  private:
-  virtual void HandleIoEvent(int) = 0;
+  virtual void HandleIoEvent(int, const sockaddr_in&) = 0;
 
  private:
   int sfd_;

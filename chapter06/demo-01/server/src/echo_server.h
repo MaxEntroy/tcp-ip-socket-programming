@@ -13,7 +13,7 @@ class EchoServer : public utils::UdpServer {
   EchoServer& operator=(const EchoServer&) = delete;
 
  private:
-  void HandleIoEvent(int) override;
+  void HandleIoEvent(int sfd) override;
 
 }; // class EchoServer
 

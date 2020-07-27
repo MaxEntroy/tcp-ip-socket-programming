@@ -4,19 +4,18 @@ cc_binary(
     "main.cc"
   ],
   deps = [
-    ":echo_server",
+    ":echo_client",
     "#gflags",
     "#pthread"
   ]
 )
 
-
 cc_library(
-  name = "echo_server",
+  name = "echo_client",
   srcs = [
-    "echo_server.cc"
+    "echo_client.cc"
   ],
   deps = [
-    "//common:udp_server"
+    "//common:udp_client"
   ]
 )

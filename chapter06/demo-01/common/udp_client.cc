@@ -23,7 +23,7 @@ void UdpClient::Init(const char* ip, int port) {
 }
 
 void UdpClient::Run() {
-  HandleIoEvent(sfd_);
+  HandleIoEvent(sfd_, serv_addr_);
 }
 
 } // namespace utils
