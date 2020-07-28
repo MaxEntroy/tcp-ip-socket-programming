@@ -1,5 +1,6 @@
 #include "udp_server.h"
 
+#include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -30,6 +31,7 @@ void UdpServer::Init(int port) {
 
 void UdpServer::EventLoop() {
   while(1) {
+    printf("Udp server[localhost:%d] waiting...\n", ntohs(serv_addr_.sin_port));
     HandleIoEvent(sfd_);
   }
 }

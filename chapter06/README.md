@@ -33,3 +33,33 @@ q:udp socket io?
 
 
 ### 实践
+
+- demo-01
+
+1.自己封装了udp-server/udp-client
+2.基于封装，实现了echo-server/echo-client
+
+在具体实践过程中，从代码层面体会udp/tcp的区别
+1.没有connect(client)-accept(server)过程(这个过程本质是三次握手建立连接的过程)
+2.server slide没有listen过程，不区分listen socket and communication socket，只有一个communication socket。这里也是因为没有connect-accept过程导致
+3.采用recvfrom/sendto 进行io，这两个函数的特点是需要 获取/给出 对端地址(这里的根本原因是，没有连接,socket不会维护对端的地址，所有需要自己维护)
+4.recvfrom一次获取。回顾tcp的数据获取过程，需要实现read_n函数，来保证流式数据中获取完整的数据包，但是udp传输不基于流式传输，一次获取可以获取完成
+
+q:sendto errno=22?
+>这里是一个比较常见的问题：
+errno=22 表示，invalid argument，下面的参考里面说的很清楚。主要是两个可能，1.地址传递有问题 2.socket绑定有问题
+>
+>下面我们仔细查看了recvfrom api, 
+If  src_addr  is  not NULL, and the underlying protocol provides the source address, this source address is filled in.  
+When src_addr is NULL, nothing is filled in; in this case, addrlen is not used, and should also be NULL.  
+The argument addrlen is a value-result argument, which the caller should initialize before the call to the size of the buffer associated with src_addr, 
+and modi‐fied  on return to indicate the actual size of the source address.  
+The returned address is truncated if the buffer provided is too small; 
+in this case, addrlen will return a value greater than was supplied to the call
+>
+>文档里说的很清楚，addrlen是个传出参数，按照常理，这个参数需要被覆盖，那么对于他的初始值我们不在乎。
+但是，文档里单独强调了，传入前，必须对这个值进行初始化，大小是结构体的大小。
+>
+>所以，这个问题的反思在于，还是主观给了基础假设，但实际上不是这样。所以，使用未知函数时，仔细看文档是重要的。
+
+[socket sendto get the error 22 during udp packets](https://stackoverflow.com/questions/20502100/socket-sendto-get-the-error-22-during-udp-packets)

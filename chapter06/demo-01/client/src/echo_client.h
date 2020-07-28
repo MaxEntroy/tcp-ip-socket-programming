@@ -1,3 +1,6 @@
+#ifndef ECHO_ECHOCLIENT_H_
+#define ECHO_ECHOCLIENT_H_
+
 #include "common/udp_client.h"
 
 namespace echo {
@@ -15,3 +18,5 @@ class EchoClient : public utils::UdpClient {
 }; // class EchoClient
 
 } // namespace echo
+
+#endif // ECHO_ECHOCLIENT_H_

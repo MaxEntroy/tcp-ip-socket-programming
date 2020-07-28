@@ -1,5 +1,5 @@
 cc_binary(
-  name = "EchoServer",
+  name = "EchoClient",
   srcs = [
     "main.cc"
   ],
