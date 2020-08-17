@@ -30,6 +30,7 @@ q:udp socket有哪些特点？
 q:udp socket io?
 1. tcp socket创建完成后，数据传输时无需再增加地址信息。因为tcp socket维护连接，即知道对方的地址信息
 2. udp socket由于不维护连接，所以无法知道对端的地址信息，需要在每次发送数据时，填写地址信息
+3. tcp socket io基于流式，所以接收数据时需要业务侧保证收到指定字节的数据，socket无法保证。udp socket则保证收到指定字节的数据。
 
 
 ### 实践
