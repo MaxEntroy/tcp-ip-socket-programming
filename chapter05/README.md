@@ -228,7 +228,7 @@ q:我的方案？
 2. 规范的结构，可以放pb，但是pb序列化之后的大小又没法确定
 3. 直接研究proto buffer encoding，看下是否能找到一个方案确定大小，结论如下：
 3.1. binary format编码，key(field_number + wire_type) + value
-3.2. 其中field_number由于在1-15内，所以整体key整体占用1byte, msg_length如果采用fix32形式，固定长度为4bytes。整个包体序列化(binary format)的长度为5 bytes.
+3.2. 其中field_number由于在1-15内，所以key整体占用1byte, msg_length如果采用fix32形式，固定长度为4bytes。整个包体序列化(binary format)的长度为5 bytes.
 
 最终，我可以给出一个序列化之后确定长度的包体表示
 ```proto

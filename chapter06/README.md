@@ -32,6 +32,11 @@ q:udp socket io?
 2. udp socket由于不维护连接，所以无法知道对端的地址信息，需要在每次发送数据时，填写地址信息
 3. tcp socket io基于流式，所以接收数据时需要业务侧保证收到指定字节的数据，socket无法保证。udp socket则保证收到指定字节的数据。
 
+q:为什么udp socket需要bind address?
+1. 每一个socket在进行网络通信的时候，都需要bind address(ip:port)
+2. udp socket不需要维护连接状态，这根是否需要bind没有关系
+3. tcp client/udp client都不需要bind原因是，tcp socket/udp socket需要使用地址，但是这个地址别人不在乎，只有他们自己在用,所以随机分配即可
+4. tcp server/udp server都需要bind原因是，如果随机分配，tcp client/udp client不知道连接哪个哪个服务
 
 ### 实践
 
