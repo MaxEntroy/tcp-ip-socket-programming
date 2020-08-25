@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+package cal;
+
+message CalReq {
+  required string seqno = 1;
+  optional string optr = 2;
+  repeated int32 opnd_arr = 3;
+};

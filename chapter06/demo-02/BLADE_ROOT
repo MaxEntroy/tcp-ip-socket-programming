@@ -27,3 +27,11 @@ cc_test_config(
   ],
   gtest_main_libs = []
 )
+
+proto_library_config(
+  protoc = "/usr/local/thirdparty/protobuf-3.6.1/bin/protoc",
+  protobuf_libs = [
+    "#protobuf"
+  ],
+  protobuf_incs = "/usr/local/thirdparty/protobuf-3.6.1/include"
+)
