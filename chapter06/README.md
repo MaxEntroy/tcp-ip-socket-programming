@@ -69,3 +69,26 @@ in this case, addrlen will return a value greater than was supplied to the call
 >所以，这个问题的反思在于，还是主观给了基础假设，但实际上不是这样。所以，使用未知函数时，仔细看文档是重要的。
 
 [socket sendto get the error 22 during udp packets](https://stackoverflow.com/questions/20502100/socket-sendto-get-the-error-22-during-udp-packets)
+
+- demo-02
+
+1.使用自己封装的udp-server/udp-client
+2.开发cal-server/cal-client
+
+这个demo的主要作用是和tcp的服务进行对比，明白两种协议的异同,主要的一些心得
+1. 先不谈底层封装的细节，业务侧使用udp和tcp的唯一区别就是对于流式数据在发送/接受的处理。
+2. udp不是流式数据，所以发送次数和接受次数严格相等.不会出现tcp流式数据，一次发送，多次接受的问题，原因主要在于udp数据非流式，有数据边界
+3. 还有一个特别重要的点是：如何获得本次数据包体的大小，是应用层协议需要处理的，和传输层没有关系。因此我特意对同一个业务分别用tcp/udp实现的原因也在于此，哪些是传输层解决的，哪些是应用层解决的，需要了然。
+
+q:bug?
+>主要是resize/reserve的使用。
+1.下面的代码，我第一次使用了reserve，是因为我考虑到如果使用resize，那么初始化的数据我其实不用，我真正用的是后面构造的。所以使用reserve
+2.但是，接收的时候，需要给出header_buf[0]的地址，这就要求这个下标有实际的元素。所以需要构造，改为resize
+
+```cpp
+std::string header_buf;
+header_buf.resize(HEADER_LEN); // 误用了header_buf.reserve
+recvfrom(sfd, &header_buf[0], HEADER_LEN, 0, NULL, NULL);
+```
+
+

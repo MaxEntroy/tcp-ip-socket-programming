@@ -10,7 +10,6 @@ cc_binary(
   ]
 )
 
-
 cc_library(
   name = "cal_client",
   srcs = [

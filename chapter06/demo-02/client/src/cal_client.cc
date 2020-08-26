@@ -15,7 +15,6 @@ void CalClient::HandleIoEvent(int sfd, const sockaddr_in& serv_addr) {
 
   MakeReq(req);
   SendReq(sfd, serv_addr, req);
-
   RecvRes(sfd, res);
   ShowRes(res);
 }
@@ -27,7 +26,6 @@ void CalClient::MakeReq(CalReq& req) {
   std::cout << "Operator: ";
   std::cin >> optr;
   req.set_optr(optr);
-
 
   int opnd_cnt = 0;
   std::cout << "Operation count: ";
@@ -50,18 +48,19 @@ void CalClient::SendReq(int sfd, const sockaddr_in& serv_addr, const CalReq& req
   req_header.SerializeToString(&header_buf);
 
   sendto(sfd, header_buf.data(), header_buf.size(), 0, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
-
   sendto(sfd, req_buf.data(), req_buf.size(), 0, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 }
 
 void CalClient::RecvRes(int sfd, CalRes& res) {
-  static char header_buf[HEADER_LEN];
-  recvfrom(sfd, header_buf, HEADER_LEN, 0, NULL, NULL );
+  std::string header_buf;
+  header_buf.resize(HEADER_LEN);
+  recvfrom(sfd, &header_buf[0], HEADER_LEN, 0, NULL, NULL);
   CalHeader cal_header;
-  cal_header.ParseFromArray(header_buf, HEADER_LEN);
+  cal_header.ParseFromString(header_buf);
 
   int res_len = cal_header.msg_len();
-  std::string res_buf(res_len, ' ');
+  std::string res_buf;
+  res_buf.resize(res_len);
   recvfrom(sfd, &res_buf[0], res_len, 0, NULL, NULL);
   res.ParseFromString(res_buf);
 }

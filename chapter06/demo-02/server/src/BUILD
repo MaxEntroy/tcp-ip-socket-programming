@@ -10,13 +10,13 @@ cc_binary(
   ]
 )
 
-
 cc_library(
   name = "cal_server",
   srcs = [
     "cal_server.cc"
   ],
   deps = [
-    "//common:udp_server"
+    "//common:udp_server",
+    "//protocal:cal_proto"
   ]
 )
