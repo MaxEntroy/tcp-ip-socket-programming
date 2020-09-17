@@ -38,3 +38,75 @@ q:如何解决zombie?
 - demo-02
 
 这个demo主要给出3种回收僵尸的形式，分别是同步阻塞，同步非阻塞，异步非阻塞
+
+```cpp
+// 同步阻塞
+// 即使child sleep，parent阻塞在wait不会向下执行
+// 同步，时间线性；阻塞，空间一致；代码好写，好理解。缺点是，程序会被阻塞。这个程序体现不出来，如果多进程的master，阻塞了无法accept connection.
+#include <stdio.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+int main(void) {
+  pid_t pid = fork();
+  int status = 0;
+
+  if (pid == 0) {
+    printf("I am child process.\n");
+    sleep(3);
+  } else {
+    printf("I am parent process, child is %d\n", pid);
+
+    wait(&status);
+    if (WIFEXITED(status)) {
+      printf("Child is terminated, message form chid is %d.\n", WEXITSTATUS(status));
+    }
+  }
+
+  if (pid == 0) {
+    printf("Child Ends.\n");
+    return 0;
+  } else {
+    printf("Parent Ends\n");
+    return 0;
+  }
+
+}
+```
+
+```cpp
+// 同步非阻塞
+// 这里还是需要进行同步操作。父进程必须保证对子进程进行回收，所以无论如何要等它
+// 不等可以不，可以。父进程执行结束，子进程还未结束，这时候子进程被init进程收养变成孤儿进程，init进程完成对后者的回收。
+#include <stdio.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+int main(void) {
+  pid_t pid = fork();
+  int status = 0;
+
+  if (pid == 0) {
+    printf("I am child process.\n");
+    sleep(3);
+  } else {
+    printf("I am parent process, child is %d\n", pid);
+
+    while(!waitpid(pid, &status, WNOHANG)) {
+      //sleep(3);
+    }
+    if (WIFEXITED(status)) {
+      printf("Child is terminated, message form chid is %d.\n", WEXITSTATUS(status));
+    }
+  }
+
+  if (pid == 0) {
+    printf("Child Ends.\n");
+    return 0;
+  } else {
+    printf("Parent Ends\n");
+    return 0;
+  }
+
+}
+```
