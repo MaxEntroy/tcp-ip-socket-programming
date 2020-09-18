@@ -12,11 +12,10 @@ int main(void) {
   } else {
     printf("I am parent process, child is %d\n", pid);
 
-    //while(!waitpid(pid, &status, WNOHANG)) {
-    //  //sleep(3);
-    //}
+    while(!waitpid(pid, &status, WNOHANG)) {
+      //sleep(3);
+    }
 
-    waitpid(pid, &status, WNOHANG);
     if (WIFEXITED(status)) {
       printf("Child is terminated, message form chid is %d.\n", WEXITSTATUS(status));
     }
@@ -29,5 +28,4 @@ int main(void) {
     printf("Parent Ends\n");
     return 0;
   }
-
 }

@@ -110,3 +110,74 @@ int main(void) {
 
 }
 ```
+
+```cpp
+// 异步非阻塞
+// 通过分析master代码我们发现，当主进程是一个while(true)-loop
+// 即主进程是server，同步操作会导致主进程无法进行其余操作
+// 此时采用异步的方式，主进程向os注册事件，以及事件处理器。
+// 当事件发生时，os调度主进程执行handler代码。
+// 当然，这种调用，本质还是主进程的调用，只不过基于事件机制，我们叫做异步调用
+// 异步的好处是，主进程根本 不用关心对于子进程的回收，专注在自己的do something即可
+#include <stdio.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <signal.h>
+
+void child_handler(int sig) {
+  printf("%d events happend.\n", sig);
+
+  int status = 0;
+  pid_t child_pid = waitpid(-1, &status, WNOHANG);
+
+  if (WIFEXITED(status)) {
+    printf("Remove child: %d.\n", child_pid);
+    printf("Child send: %d.\n", status);
+  }
+}
+
+void do_something(int& counter) {
+  printf("Parent: do something.\n");
+  counter += 5;
+  sleep(3);
+}
+
+void register_event() {
+  struct sigaction action;
+  action.sa_handler = &child_handler;
+  action.sa_flags = 0;
+  sigemptyset(&action.sa_mask);
+
+  sigaction(SIGCHLD, &action, NULL);
+}
+
+int child_routine() {
+  printf("I am child process.\n");
+  printf("Child Ends.\n");
+  return 100;
+}
+
+int parent_routine() {
+  int counter = 0;
+  while(true) {
+    do_something(counter);
+    if (counter > 10) {
+      break;
+    }
+  }
+  printf("Parent Ends\n");
+  return 0;
+}
+
+int main(void) {
+  register_event();
+
+  pid_t pid = fork();
+  if (pid == 0) {
+    return child_routine();
+  } else {
+    return parent_routine();
+  }
+}
+
+```
