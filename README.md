@@ -19,3 +19,9 @@
 ### chapter09 套接字的多种可选项
 
 ### chapter10 多进程服务器端
+
+### 服务器演进
+
+- chapter05/demo-04 给出一个完整的tcp迭代服务器
+- chapter06/demo-02 给出一个完整的udp迭代服务器
+- chapter10/demo-03 给出一个完整的tcp多进程服务器
