@@ -1,0 +1,7 @@
+syntax = "proto2";
+
+package cal;
+
+message CalHeader {
+  required fixed32 msg_len = 1; 
+};

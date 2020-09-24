@@ -24,4 +24,5 @@
 
 - chapter05/demo-04 给出一个完整的tcp迭代服务器
 - chapter06/demo-02 给出一个完整的udp迭代服务器
+- chapter09/demo-01 tcp迭代服务器修复bind error问题
 - chapter10/demo-03 给出一个完整的tcp多进程服务器
