@@ -8,7 +8,8 @@
 
 namespace utils {
 
-const int kDefaultPollConnections = 128;
+const int kDefaultPollConnections = 2;
+const int kDefaultPollTimeout = 10000;
 
 class TcpServer {
  public:

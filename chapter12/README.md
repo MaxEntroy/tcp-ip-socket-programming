@@ -59,3 +59,50 @@ leo给了建议，需要管理fd的buffer
 >
 暂时没有想到特别好的方式，先没有解决这个问题。先向下走，到epoll看看有没有好的办法
 
+- demo-02
+
+poll sever.面临和select sever一样的情形。
+
+demo-02犯了一个非常典型的错误-对于指针的更新，只能利用二维指针
+
+```cpp
+下面是错误的代码，当然调用也一定错了。
+1.c/c++基础类型，值传递. pfd_arr值传递，副本和原来的值，指向了同一个地址
+2.AddfdToPoll更新了形参的值，但是实参没有改变
+3.但是，sz发生了改变
+4.下次poll的时候，pfd_arr没有改变，但是sz发生了改变。下溢
+5.这段代码，还内存泄露了。形参开辟了dynamic memory，但是没有回收
+static void AddfdToPoll(struct pollfd* pfd_arr, int fd, int* sz, int* cap) {
+  if (*sz == *cap) {
+    *cap = 2 * *cap;
+    printf("cap = %d.\n", *cap);
+    pfd_arr = static_cast<struct pollfd*>(realloc(*pfd_arr, (*cap) * sizeof(struct pollfd)));
+    if (!pfd_arr) {
+      err_handling("realloc", "error");
+    }
+  }
+
+  pfd_arr[*sz].fd = fd;
+  pfd_arr[*sz].events = POLLIN;
+
+  (*sz)++;
+}
+
+// 正确的接口
+static void AddfdToPoll(struct pollfd** pfd_arr, int fd, int* sz, int* cap)
+
+// 课本的接口
+static void AddfdToPoll(struct pollfd* pfd_arr[], int fd, int* sz, int* cap)
+
+// 多问一个，如果一个指针数组，应该怎么给出更新时的形参地址
+// 指针数组，每个元素是指针。一个*，数组再给一个*。如果形参要更新，再给一个*
+
+```
+
+- demo-03
+
+解决了demo-01/demo-02存在的问题。这里我想强调一点，只有有了思路。不管这个思路的好坏，在你没有别的思路的前提下。把它实现了就好，因为一个不好的办法，总比什么都没有好。
+并且，不好的方法，有时候可能也是非常主观的。比如，这个例子最后的办法，就是提供对于fd buffer的管理，否则无法管理状态。tcp确实存在分包的问题，这个没办法，所以一开始的思路就是正确的。
+只是，最后怀疑自己的方法不够好，没有实现
+
+

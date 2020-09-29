@@ -48,23 +48,25 @@ void TcpServer::Init(int port, int backlog) {
   }
 }
 
-static void AddfdToPoll(struct pollfd* pfd_arr, int fd, int* sz, int* cap) {
+static void AddfdToPoll(struct pollfd** pfd_arr, int fd, int* sz, int* cap) {
   if (*sz == *cap) {
     *cap = 2 * *cap;
-    pfd_arr = static_cast<struct pollfd*>(realloc(pfd_arr, *cap));
+    printf("cap = %d.\n", *cap);
+    (*pfd_arr) = static_cast<struct pollfd*>(realloc(*pfd_arr, (*cap) * sizeof(struct pollfd)));
     if (!pfd_arr) {
       err_handling("realloc", "error");
     }
   }
 
-  pfd_arr[*sz].fd = fd;
-  pfd_arr[*sz].events = POLLIN;
+  (*pfd_arr)[*sz].fd = fd;
+  (*pfd_arr)[*sz].events = POLLIN;
 
-  *sz++;
+  (*sz)++;
 }
 
 static void RemovefdFromPoll(struct pollfd* pfd_arr, int idx, int* sz) {
-  pfd_arr[idx] = pfd_arr[*sz-- - 1];
+  pfd_arr[idx] = pfd_arr[*sz - 1];
+  (*sz)--;
 }
 
 void TcpServer::EventLoop() {
@@ -84,12 +86,10 @@ void TcpServer::EventLoop() {
   pfd_arr[0].fd = listen_sfd_;
   pfd_arr[0].events = POLLIN;
 
-  int millisecs = 5000;
-
   while(1) {
     printf("Tcp server[localhost:%d] waiting...\n", ntohs(serv_addr_.sin_port));
 
-    int ret = poll(pfd_arr, fd_sz, millisecs);
+    int ret = poll(pfd_arr, fd_sz, kDefaultPollTimeout);
     if (ret == -1) {
       perr_handling("poll", "error");
     } else if (ret == 0) {
@@ -105,7 +105,7 @@ void TcpServer::EventLoop() {
             }
 
             // Add clnt_sfd to poll
-            AddfdToPoll(pfd_arr, clnt_sfd, &fd_sz, &fd_cap);
+            AddfdToPoll(&pfd_arr, clnt_sfd, &fd_sz, &fd_cap);
             printf("[%s:%d] connected.\n", inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
           } else {
             HandleIoEvent(sfd);
@@ -119,6 +119,7 @@ void TcpServer::EventLoop() {
       }// for
     }
   }
+  free(pfd_arr);
 }
 
 } // namespace utils
