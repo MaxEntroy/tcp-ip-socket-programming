@@ -105,4 +105,33 @@ static void AddfdToPoll(struct pollfd* pfd_arr[], int fd, int* sz, int* cap)
 并且，不好的方法，有时候可能也是非常主观的。比如，这个例子最后的办法，就是提供对于fd buffer的管理，否则无法管理状态。tcp确实存在分包的问题，这个没办法，所以一开始的思路就是正确的。
 只是，最后怀疑自己的方法不够好，没有实现
 
+下面，我们开始尝试解决这个问题。在解决过程中，顺带解决了很多其他有意义的问题，这里也一并进行总结。
 
+q:当我们使用io多路复用的时候，为什么一定要设置listen_sfd nonblocking?
+>这个问题需要小心的地方在于，当我们不使用select时，这么做没有问题。
+当我们使用多路复用时，这个bug会出现。对于这个问题的解决，unp给了非常好的解释。当然，这又需要我们了解一下其他的问题
+
+q:Connection Abort before accept Returns
+>参照参考文献1当中时序图，问题是很明确的。
+1.client调用connect与server完成三次握手，此时connection被放入queue of pending connections(listen第二个参数指定queue大小)
+2.接下来调用accpet从连接就绪队列中拿出一个connection，创建新的sfd
+3.问题就处在1和2之间，作者假设一个busy web server(这种情况在现实中很少，但确实可能存在)，当1结束后，来不及处理2，即1和2之间存在一定time gap.但此时，一个connection被发送了一个rst
+4.真正的问题在于，对于这个aborted connection的处理，大家实现的并不统一
+4.1.Berkeley-derived implementations handle the aborted connection completely within the kernel, and the server process never sees it
+4.2.The steps involved in Berkeley-derived kernels that never pass this error to the process can be followed in TCPv2(由于api不返回任何错误信息，所以进程无法感知到这个aborted connecton已经被移除了)
+4.3.The RST is processed on p. 964, causing tcp_close to be called. This function calls in_pcbdetach on p. 897, which in turn calls sofree on p. 719. sofree (p. 473) finds that the socket being aborted is still on the listening socket's completed connection queue and removes the socket from the queue and frees the socket(这里我们明确知道，内核把aborted connection从pending queue中移除了)
+4.4.When the server gets around to calling accept, it will never know that a connection that was completed has since been removed from the queue
+从以上信息我们可以得知，berkely实现的根本问题在于：内核移除aborted connecton，但是不返回任何信息，所以用户进程不知道。用户进程不知道，就会一直阻塞在accept这里，等待peding queue有数据时才处理
+
+那么，我们现在开始讨论，为什么listen_sfd nonblocking和select一起使用时，会出问题。
+1. 当然，这里先说下，listen_sfd和select开始配置时，设置blocking的原因是，select返回后，如果有请求来，listen_sfd一定可读，此时accept不会阻塞，没有设置nonblocking的理由
+2. 一旦出现Connection Abort before accept Returns，并且此时是berkely-derived impletation，并且pending queue中除了刚才被移除的aborted connection，没有其余connection。此时，由于accept不返回任何信息，进程会阻塞在accept这里。
+3. 由于此时是通过select进行fd的监听，由于进程阻塞在accept这里，有请求来也无法处理。进程会永远阻塞在这里，server出现pending.
+
+q:如何解决这个问题？
+1. Always set a listening socket to nonblocking when you use select to indicate when a connection is ready to be accepted.
+2. Ignore the following errors on the subsequent call to accept: EWOULDBLOCK (for Berkeley-derived implementations, when the client aborts the connection), ECONNABORTED (for POSIX implementations, when the client aborts the connection), EPROTO (for SVR4 implementations, when the client aborts the connection), and EINTR (if signals are being caught).
+
+参考<br>
+[Connection Abort before accept Returns](http://www.masterraghu.com/subjects/np/introduction/unix_network_programming_v1.3/ch05lev1sec11.html#ch05lev1sec11)<br>
+[16.6 Nonblocking accept](http://www.masterraghu.com/subjects/np/introduction/unix_network_programming_v1.3/ch16lev1sec6.html)
