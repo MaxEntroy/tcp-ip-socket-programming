@@ -112,16 +112,16 @@ q:当我们使用io多路复用的时候，为什么一定要设置listen_sfd no
 当我们使用多路复用时，这个bug会出现。对于这个问题的解决，unp给了非常好的解释。当然，这又需要我们了解一下其他的问题
 
 q:Connection Abort before accept Returns
->参照参考文献1当中时序图，问题是很明确的。
-1.client调用connect与server完成三次握手，此时connection被放入queue of pending connections(listen第二个参数指定queue大小)
-2.接下来调用accpet从连接就绪队列中拿出一个connection，创建新的sfd
-3.问题就处在1和2之间，作者假设一个busy web server(这种情况在现实中很少，但确实可能存在)，当1结束后，来不及处理2，即1和2之间存在一定time gap.但此时，一个connection被发送了一个rst
-4.真正的问题在于，对于这个aborted connection的处理，大家实现的并不统一
-4.1.Berkeley-derived implementations handle the aborted connection completely within the kernel, and the server process never sees it
-4.2.The steps involved in Berkeley-derived kernels that never pass this error to the process can be followed in TCPv2(由于api不返回任何错误信息，所以进程无法感知到这个aborted connecton已经被移除了)
+>参照参考文献1当中时序图，问题是很明确的<br>
+1.client调用connect与server完成三次握手，此时connection被放入queue of pending connections(listen第二个参数指定queue大小)<br>
+2.接下来调用accpet从连接就绪队列中拿出一个connection，创建新的sfd<br>
+3.问题就处在1和2之间，作者假设一个busy web server(这种情况在现实中很少，但确实可能存在)，当1结束后，来不及处理2，即1和2之间存在一定time gap.但此时，一个connection被发送了一个rst<br>
+4.真正的问题在于，对于这个aborted connection的处理，大家实现的并不统一<br>
+4.1.Berkeley-derived implementations handle the aborted connection completely within the kernel, and the server process never sees it<br>
+4.2.The steps involved in Berkeley-derived kernels that never pass this error to the process can be followed in TCPv2(由于api不返回任何错误信息，所以进程无法感知到这个aborted connecton已经被移除了)<br>
 4.3.The RST is processed on p. 964, causing tcp_close to be called. This function calls in_pcbdetach on p. 897, which in turn calls sofree on p. 719. sofree (p. 473) finds that the socket being aborted is still on the listening socket's completed connection queue and removes the socket from the queue and frees the socket(这里我们明确知道，内核把aborted connection从pending queue中移除了)
 4.4.When the server gets around to calling accept, it will never know that a connection that was completed has since been removed from the queue
-从以上信息我们可以得知，berkely实现的根本问题在于：内核移除aborted connecton，但是不返回任何信息，所以用户进程不知道。用户进程不知道，就会一直阻塞在accept这里，等待peding queue有数据时才处理
+从以上信息我们可以得知，berkely实现的根本问题在于：内核移除aborted connecton，但是不返回任何信息，所以用户进程不知道。用户进程不知道，就会一直阻塞在accept这里，等待peding queue有数据时才处理<br>
 
 那么，我们现在开始讨论，为什么listen_sfd nonblocking和select一起使用时，会出问题。
 1. 当然，这里先说下，listen_sfd和select开始配置时，设置blocking的原因是，select返回后，如果有请求来，listen_sfd一定可读，此时accept不会阻塞，没有设置nonblocking的理由
