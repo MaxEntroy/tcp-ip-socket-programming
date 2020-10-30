@@ -78,14 +78,29 @@ void TcpServer::EventLoop() {
     } else {
       if (FD_ISSET(listen_sfd_, &cpy_read_set)) {
       }
+
       for (int sfd = 0; sfd <= max_sfd; ++sfd) {
         if (sfd == listen_sfd_) {
           continue;
         }
 
-        //if (FD_ISSET(sfd, &cpy_read_set)) {
-        //  OnSocketRead(sfd, &input_buf_list_[sfd]);
-        //}
+        if (FD_ISSET(sfd, &cpy_read_set)) {
+          ret = OnSocketRead(sfd, &input_buf_list_[sfd]);
+          HandleIoEvent(&input_buf_list_[sfd], &output_buf_list_[sfd]);
+
+          if (ret) {
+            FD_CLR(sfd, &read_set);
+            input_buf_list_[sfd].Clear();
+            close(sfd);
+          }
+        } else if (FD_ISSET(sfd, &cpy_write_set)) {
+          ret = OnSocketWrite(sfd, &output_buf_list_[sfd]);
+          if (ret) {
+            FD_CLR(sfd, &write_set);
+            output_buf_list_[sfd].Clear();
+            close(sfd);
+          }
+        }
 
         //if (input_buf_list_[sfd].is_read_ready()) {
         //  HandleIoEvent(&input_buf_list_[sfd], &output_buf_list_[sfd]);
@@ -124,6 +139,14 @@ void TcpServer::EventLoop() {
       }
     }
   }
+}
+
+bool TcpServer::OnSocketRead(int sfd, Buffer* buf) {
+  return true;
+}
+
+bool TcpServer::OnSocketWrite(int sfd, Buffer* buf) {
+  return true;
 }
 
 } // namespace utils

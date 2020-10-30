@@ -26,6 +26,9 @@ class TcpServer {
   virtual void HandleIoEvent(Buffer* input_buf,
                              Buffer* output_buf) = 0;
 
+  bool OnSocketRead(int sfd, Buffer* buf);
+  bool OnSocketWrite(int sfd, Buffer* buf);
+
  private:
   int listen_sfd_;
   struct sockaddr_in serv_addr_;
